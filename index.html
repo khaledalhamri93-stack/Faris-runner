@@ -995,11 +995,11 @@ const STAGE_NAMES=['الانطلاقة','مطاردة الصخرة','معركة 
 /* ================= الملف الشخصي ================= */
 const LEVELS=[[0,'مبتدئ','🌱'],[800,'متدرّب','📘'],[2500,'فارس','🛡️'],[5000,'بطل','🏆'],[9000,'أسطورة','🌟']];
 function levelOf(xp){let k=0;LEVELS.forEach((x,j)=>{if(xp>=x[0])k=j});const l=LEVELS[k],nx=LEVELS[k+1];return{k,name:l[1],icon:l[2],from:l[0],next:nx?nx[0]:null}}
-const DEF_AV={age:11,skin:1,hair:'short',hc:'h0',outfit:'uniform',oc:'c0',acc:'none',hand:'none'};
+const DEF_AV={age:11,skin:1,hair:'short',hc:'h0',outfit:'runner',oc:'c1',acc:'none',hand:'none'};
 let player=LS.get('fr4-player','');
 function profAll(){return LS.get('fr4-prof',{})}
 function prof(n){const p=(profAll()[n||player])||{};
- return {xp:p.xp||0,coins:p.coins||0,coinsTotal:p.coinsTotal||0,badges:p.badges||[],items:p.items||[],av:Object.assign({},DEF_AV,p.av||{}),
+ return {xp:p.xp||0,coins:p.coins||0,coinsTotal:p.coinsTotal||0,badges:p.badges||[],items:p.items||[],av:fixAv(Object.assign({},DEF_AV,p.av||{})),
   prog:p.prog||{},stomps:p.stomps||0,treasures:p.treasures||0,cleanStages:p.cleanStages||0,made:!!p.made,diff:p.diff==null?1:p.diff,weak:p.weak||{},gold:p.gold||0,maxCombo:p.maxCombo||0,hardWins:p.hardWins||0,reviews:p.reviews||0,gems:p.gems||0}}
 function profSave(p,n){const a=profAll();a[n||player]=p;LS.set('fr4-prof',a)}
 let unlockAll=LS.get('fr4-unlock-all',false);
@@ -1009,31 +1009,49 @@ function worldUnlocked(i){if(unlockAll||i===0)return true;const pr=prof().prog[W
 /* fr: مجاني • lv:k يُفتح بالمستوى • coin:n يُشترى بالعملات • tr: كنز */
 const SKINS=['#fbe3cf','#f6d7b8','#eac096','#d6a070','#b97b50','#8a5634','#5e3a22'];
 const SKIN_NAMES=['فاتح جدًّا','فاتح','حنطي فاتح','حنطي','أسمر','أسمر داكن','داكن'];
+/* ================= خزانة فارس العدّاء: ملابس وإكسسوارات المغامرات ================= */
 const ITEMS={
  hair:[{id:'short',n:'قصير',fr:1},{id:'side',n:'مفروق',fr:1},{id:'curly',n:'مجعّد',fr:1},{id:'buzz',n:'خفيف',fr:1},{id:'ghutra',n:'غترة',fr:1},{id:'ghutraR',n:'شماغ',fr:1},{id:'taqiyah',n:'طاقية',fr:1},{id:'afro',n:'كثيف',coin:100},{id:'spiky',n:'مشوّك',coin:150},{id:'mohawk',n:'عُرف',tr:1}],
  hc:[{id:'h0',n:'أسود',c:'#1b1b1b',fr:1},{id:'h1',n:'بنّي داكن',c:'#3b2416',fr:1},{id:'h2',n:'بنّي',c:'#6b4423',fr:1},{id:'h3',n:'كستنائي',c:'#9a4a22',fr:1},{id:'h4',n:'ذهبي',c:'#e0b030',lv:2},{id:'h5',n:'فضّي',c:'#c9d1d9',lv:3},{id:'h6',n:'أزرق',c:'#3b82f6',tr:1},{id:'h7',n:'بنفسجي',c:'#9b5de5',tr:1},{id:'h8',n:'أخضر',c:'#2ecc71',tr:1},{id:'h9',n:'ناري',c:'#ff5722',coin:250}],
- outfit:[{id:'uniform',n:'الزيّ المدرسي',e:'👔',fr:1},{id:'jersey',n:'قميص رياضي',e:'🎽',fr:1},{id:'hoodie',n:'سترة',e:'🧥',fr:1},{id:'thobe',n:'ثوب',e:'🥋',fr:1},{id:'armor',n:'درع الفارس',e:'🛡️',lv:2},{id:'bisht',n:'بشت',e:'🧣',lv:3},{id:'doctor',n:'معطف الطبيب',e:'🥼',lv:1},{id:'chef',n:'زيّ الطاهي',e:'🧑‍🍳',coin:200},{id:'pilot',n:'زيّ الطيّار',e:'🧑‍✈️',coin:250},{id:'fire',n:'زيّ الإطفائي',e:'🧑‍🚒',lv:2},{id:'explorer',n:'زيّ المستكشف',e:'🧭',coin:350},{id:'ninja',n:'زيّ النينجا',e:'🥷',coin:300},{id:'hero',n:'بدلة البطل الخارق',e:'🦸',tr:1},{id:'astro',n:'بدلة الفضاء',e:'🧑‍🚀',tr:1}],
- oc:[{id:'c0',n:'فيروزي',c:'#0f9d9a',fr:1},{id:'c1',n:'برتقالي',c:'#ff8a3d',fr:1},{id:'c2',n:'أزرق',c:'#1e88e5',fr:1},{id:'c3',n:'أحمر',c:'#e53935',fr:1},{id:'c4',n:'أخضر',c:'#2e9e4f',fr:1},{id:'c5',n:'أسود',c:'#263238',coin:100},{id:'c8',n:'وردي',c:'#ff6f91',fr:1},{id:'c9',n:'بنفسجي',c:'#6c5ce7',fr:1},{id:'c10',n:'أبيض',c:'#eceff1',coin:80},{id:'c6',n:'ذهبي',c:'#f2c230',tr:1},{id:'c11',n:'فضّي',c:'#b0bec5',lv:3},{id:'c7',n:'قوس قزح',c:'rainbow',tr:1}],
- hand:[{id:'none',n:'بدون',e:'➖',fr:1},{id:'book',n:'كتاب',e:'📘',fr:1},{id:'flag',n:'علم البحرين',e:'🇧🇭',fr:1},{id:'pencil',n:'قلم',e:'✏️',fr:1},{id:'shield',n:'ترس',e:'🛡️',coin:250},{id:'sword',n:'سيف الفارس',e:'🗡️',lv:2},{id:'trophy',n:'كأس',e:'🏆',lv:3},{id:'wand',n:'عصا سحرية',e:'🪄',tr:1},{id:'falcon',n:'صقر',e:'🦅',tr:1}],
- acc:[{id:'none',n:'بدون',e:'➖',fr:1},{id:'glasses',n:'نظّارة',e:'👓',fr:1},{id:'cap',n:'قبّعة',e:'🧢',fr:1},{id:'headphones',n:'سمّاعات',e:'🎧',fr:1},{id:'bowtie',n:'ربطة فراشة',e:'🎀',fr:1},{id:'scarf',n:'وشاح',e:'🧣',coin:100},{id:'partyhat',n:'قبّعة الحفل',e:'🥳',coin:120},{id:'chefhat',n:'قبّعة الطاهي',e:'👨‍🍳',coin:150},{id:'goggles',n:'نظّارة الطيران',e:'🥽',coin:180},{id:'gradcap',n:'قبّعة التخرّج',e:'🎓',lv:2},{id:'medal',n:'وسام',e:'🏅',lv:1},{id:'sunglasses',n:'نظّارة شمسية',e:'🕶️',coin:200},{id:'cape',n:'عباءة الأبطال',e:'🦸',lv:3},{id:'crown',n:'تاج',e:'👑',tr:1},{id:'helmet',n:'خوذة الفارس',e:'⛑️',tr:1},{id:'wings',n:'أجنحة',e:'🪽',tr:1}]
+ outfit:[{id:'runner',n:'قميص العدّاء',e:'🎽',fr:1},{id:'uniform',n:'الزيّ المدرسي',e:'👔',fr:1},{id:'explorer',n:'زيّ المستكشف',e:'🧭',fr:1},{id:'thobe',n:'ثوب',e:'🥋',fr:1},{id:'ranger',n:'زيّ حارس الغابة',e:'🌴',lv:1},{id:'surf',n:'قميص الشاطئ',e:'🏄',coin:150},{id:'archaeo',n:'زيّ عالم الآثار',e:'🏛️',coin:200},{id:'parka',n:'سترة الثلج',e:'🏔️',coin:250},{id:'fire',n:'بدلة مقاومة الحمم',e:'🌋',lv:2},{id:'astro',n:'بدلة الفضاء',e:'🚀',lv:3},{id:'speed',n:'بدلة البرق',e:'⚡',tr:1},{id:'hero',n:'بدلة البطل الخارق',e:'🦸',tr:1},{id:'armor',n:'درع الحارس الذهبي',e:'🛡️',tr:1}],
+ oc:[{id:'c1',n:'برتقالي',c:'#ff8a3d',fr:1},{id:'c0',n:'فيروزي',c:'#0f9d9a',fr:1},{id:'c2',n:'أزرق',c:'#1e88e5',fr:1},{id:'c3',n:'أحمر',c:'#e53935',fr:1},{id:'c4',n:'أخضر',c:'#2e9e4f',fr:1},{id:'c9',n:'بنفسجي',c:'#6c5ce7',fr:1},{id:'c5',n:'أسود',c:'#263238',coin:100},{id:'c10',n:'أبيض',c:'#eceff1',coin:80},{id:'c11',n:'فضّي',c:'#b0bec5',lv:3},{id:'c6',n:'ذهبي',c:'#f2c230',tr:1},{id:'c7',n:'قوس قزح',c:'rainbow',tr:1}],
+ hand:[{id:'none',n:'بدون',e:'➖',fr:1},{id:'map',n:'خريطة الكنز',e:'🗺️',fr:1,emo:1},{id:'compass',n:'بوصلة',e:'🧭',fr:1,emo:1},{id:'flag',n:'علم البحرين',e:'🇧🇭',fr:1},{id:'torch',n:'كشّاف',e:'🔦',coin:120,emo:1},{id:'boomerang',n:'بوميرانغ',e:'🪃',coin:150,emo:1},{id:'pick',n:'معول المستكشف',e:'⛏️',lv:1,emo:1},{id:'shield',n:'ترس الحارس',e:'🛡️',coin:250},{id:'trophy',n:'كأس السباق',e:'🏆',lv:3},{id:'gem',n:'جوهرة الصناديق',e:'💎',tr:1,emo:1},{id:'falcon',n:'صقر',e:'🦅',tr:1}],
+ acc:[{id:'none',n:'بدون',e:'➖',fr:1},{id:'safari',n:'قبّعة المستكشف',e:'🤠',fr:1},{id:'bandana',n:'عصابة الرأس',e:'🎗️',fr:1},{id:'cap',n:'قبّعة رياضية',e:'🧢',fr:1},{id:'headphones',n:'سمّاعات',e:'🎧',fr:1},{id:'sunglasses',n:'نظّارة الشاطئ',e:'🕶️',coin:120},{id:'headlamp',n:'مصباح الرأس',e:'🔦',coin:150},{id:'goggles',n:'نظّارة الثلج',e:'🥽',coin:180},{id:'scarf',n:'وشاح الثلج',e:'🧣',coin:100},{id:'medal',n:'وسام العدّاء',e:'🏅',lv:1},{id:'helmet',n:'خوذة المغامر',e:'⛑️',lv:2},{id:'cape',n:'عباءة الأبطال',e:'🦸',lv:3},{id:'crown',n:'تاج العوالم',e:'👑',tr:1},{id:'wings',n:'أجنحة',e:'🪽',tr:1}]
 };
 const KIND_NAMES={hair:'تسريحة',hc:'لون الشعر',outfit:'ملابس',oc:'لون الملابس',acc:'إكسسوار',hand:'قطعة في اليد'};
-/* أطقم جاهزة: تُلبس دفعة واحدة إذا امتلك اللاعب كل قطعها */
 const SETS=[
- {n:'التلميذ المجتهد',e:'🎒',av:{hair:'side',outfit:'uniform',oc:'c2',acc:'glasses',hand:'book'}},
- {n:'ابن البحرين',e:'🇧🇭',av:{hair:'ghutraR',outfit:'thobe',oc:'c3',acc:'none',hand:'flag'}},
- {n:'نجم الملعب',e:'⚽',av:{hair:'spiky',outfit:'jersey',oc:'c3',acc:'headphones',hand:'trophy'}},
- {n:'الطبيب الصغير',e:'🩺',av:{hair:'short',outfit:'doctor',oc:'c0',acc:'glasses',hand:'pencil'}},
- {n:'الطاهي الماهر',e:'🍳',av:{hair:'short',outfit:'chef',oc:'c10',acc:'chefhat',hand:'none'}},
- {n:'الطيّار',e:'✈️',av:{hair:'side',outfit:'pilot',oc:'c2',acc:'goggles',hand:'none'}},
- {n:'رجل الإطفاء',e:'🚒',av:{hair:'buzz',outfit:'fire',oc:'c3',acc:'cap',hand:'none'}},
- {n:'المستكشف',e:'🧭',av:{hair:'curly',outfit:'explorer',oc:'c4',acc:'scarf',hand:'book'}},
- {n:'الفارس الذهبي',e:'⚔️',av:{hair:'short',outfit:'armor',oc:'c6',acc:'helmet',hand:'sword'}},
- {n:'شيخ المجلس',e:'🦅',av:{hair:'ghutra',outfit:'bisht',oc:'c5',acc:'none',hand:'falcon'}},
+ {n:'التلميذ العدّاء',e:'🎒',av:{hair:'side',outfit:'runner',oc:'c1',acc:'cap',hand:'none'}},
+ {n:'المستكشف',e:'🧭',av:{hair:'short',outfit:'explorer',oc:'c4',acc:'safari',hand:'map'}},
+ {n:'حارس الغابة',e:'🌴',av:{hair:'side',outfit:'ranger',oc:'c4',acc:'bandana',hand:'compass'}},
+ {n:'بطل الشاطئ',e:'🏖️',av:{hair:'curly',outfit:'surf',oc:'c2',acc:'sunglasses',hand:'boomerang'}},
+ {n:'عالم الآثار',e:'🏛️',av:{hair:'short',outfit:'archaeo',oc:'c1',acc:'safari',hand:'torch'}},
+ {n:'متسلّق الثلج',e:'🏔️',av:{hair:'buzz',outfit:'parka',oc:'c3',acc:'goggles',hand:'pick'}},
+ {n:'مقاوم الحمم',e:'🌋',av:{hair:'buzz',outfit:'fire',oc:'c3',acc:'helmet',hand:'shield'}},
  {n:'رائد الفضاء',e:'🚀',av:{hair:'buzz',outfit:'astro',oc:'c2',acc:'none',hand:'none'}},
- {n:'البطل الخارق',e:'🦸',av:{hair:'mohawk',outfit:'hero',oc:'c3',acc:'cape',hand:'none'}},
- {n:'الساحر',e:'🪄',av:{hair:'afro',outfit:'hoodie',oc:'c9',acc:'partyhat',hand:'wand'}}
+ {n:'ابن البحرين',e:'🇧🇭',av:{hair:'ghutraR',outfit:'thobe',oc:'c3',acc:'none',hand:'flag'}},
+ {n:'عدّاء البرق',e:'⚡',av:{hair:'spiky',outfit:'speed',oc:'c1',acc:'headphones',hand:'trophy'}},
+ {n:'سيّد العوالم',e:'👑',av:{hair:'short',outfit:'armor',oc:'c6',acc:'crown',hand:'gem'}}
 ];
+function fixAv(a){for(const k of ['hair','hc','outfit','oc','acc','hand'])if(!ITEMS[k].some(i=>i.id===a[k]))a[k]=DEF_AV[k];return a}
+/* رسم القطع الجديدة من الأمام */
+function themeAvatar(x,A,headY,headR,oc0,top,bot,bw){
+ const oc=oc0==='rainbow'?'#e53935':oc0,o=A.outfit,R=(X,Y,w,h,r)=>{x.beginPath();if(x.roundRect)x.roundRect(X,Y,w,h,r);else x.rect(X,Y,w,h)};
+ const body=col=>{x.fillStyle=col;R(50-bw,top,bw*2,bot-top+4,14);x.fill()};
+ if(o==='runner'){body(oc);x.fillStyle='rgba(255,255,255,.9)';x.fillRect(50-bw,top+2,bw*2,4);x.fillRect(50-bw,top+40,bw*2,3);x.font='900 20px Tajawal,Tajawal,sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText('٤',50,top+24);x.fillStyle='#fff';x.beginPath();x.moveTo(42,top);x.lineTo(50,top+8);x.lineTo(58,top);x.fill()}
+ if(o==='ranger'){body('#5b7f3a');x.fillStyle='#4a6a2e';x.fillRect(34,top+14,12,10);x.fillRect(54,top+14,12,10);x.fillStyle='#f2c230';x.beginPath();for(let k=0;k<10;k++){const r=k%2?2.4:5,a=-Math.PI/2+k*Math.PI/5;x.lineTo(40+Math.cos(a)*r,top+19+Math.sin(a)*r)}x.closePath();x.fill();x.fillStyle='#3e2b1a';x.fillRect(50-bw,top+40,bw*2,5);x.fillStyle='#f2c230';x.fillRect(47,top+40,6,5);x.fillStyle=oc;x.beginPath();x.moveTo(42,top);x.lineTo(50,top+10);x.lineTo(58,top);x.fill()}
+ if(o==='surf'){body(oc);[[36,top+12,'#fff'],[60,top+18,'#ffd34e'],[44,top+32,'#ff8fb1'],[64,top+40,'#fff'],[34,top+46,'#ffd34e']].forEach(([a,b,c2])=>{x.fillStyle=c2;for(let k=0;k<5;k++){x.beginPath();x.arc(a+Math.cos(k*1.26)*3,b+Math.sin(k*1.26)*3,2.4,0,7);x.fill()}x.fillStyle='#e53935';x.beginPath();x.arc(a,b,1.4,0,7);x.fill()});x.fillStyle='rgba(0,0,0,.18)';x.beginPath();x.moveTo(42,top);x.lineTo(50,top+16);x.lineTo(58,top);x.fill()}
+ if(o==='archaeo'){body('#d9bd8c');x.fillStyle='#7a5230';x.beginPath();x.moveTo(50-bw,top+4);x.lineTo(44,top);x.lineTo(44,bot+4);x.lineTo(50-bw,bot+4);x.fill();x.beginPath();x.moveTo(50+bw,top+4);x.lineTo(56,top);x.lineTo(56,bot+4);x.lineTo(50+bw,bot+4);x.fill();x.fillStyle='#5d3b1f';x.fillRect(29,top+24,12,9);x.fillRect(59,top+24,12,9);x.fillStyle=oc;x.fillRect(46,top+2,8,6)}
+ if(o==='parka'){const g=x.createLinearGradient(0,top,0,bot);g.addColorStop(0,oc);g.addColorStop(1,'rgba(0,0,0,.25)');body(oc);x.fillStyle=g;R(50-bw,top,bw*2,bot-top+4,14);x.fill();x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=2;for(let k=1;k<5;k++){x.beginPath();x.moveTo(50-bw+3,top+k*11);x.quadraticCurveTo(50,top+k*11+4,50+bw-3,top+k*11);x.stroke()}x.fillStyle='#555';x.fillRect(49,top+4,2,bot-top);x.fillStyle='#f5f0e6';x.beginPath();x.ellipse(50,top+2,22,7,0,0,7);x.fill();x.fillStyle='rgba(0,0,0,.08)';x.beginPath();x.ellipse(50,top+4,20,4,0,0,7);x.fill()}
+ if(o==='speed'){body('#1d1d24');x.fillStyle=oc;x.beginPath();x.moveTo(54,top+6);x.lineTo(40,top+30);x.lineTo(50,top+30);x.lineTo(44,top+52);x.lineTo(62,top+24);x.lineTo(52,top+24);x.closePath();x.fill();x.fillStyle='rgba(255,255,255,.18)';x.fillRect(50-bw,top+50,bw*2,3)}
+ /* إكسسوارات */
+ const ac=A.acc,ghutra=A.hair==='ghutra'||A.hair==='ghutraR'||A.hair==='taqiyah';
+ if(ac==='safari'&&!ghutra){x.fillStyle='#a8865a';x.beginPath();x.ellipse(50,headY-16,32,7,0,0,7);x.fill();x.fillStyle='#c9a46b';x.beginPath();x.arc(50,headY-17,19,Math.PI,0);x.closePath();x.fill();x.fillStyle='#5d4037';x.fillRect(31,headY-21,38,4);x.fillStyle='rgba(255,255,255,.2)';x.beginPath();x.ellipse(44,headY-28,6,3,-.4,0,7);x.fill()}
+ if(ac==='bandana'){x.fillStyle=oc==='#e53935'?'#1e88e5':'#e53935';R(28,headY-16,44,8,4);x.fill();x.beginPath();x.moveTo(72,headY-13);x.lineTo(84,headY-20);x.lineTo(82,headY-8);x.closePath();x.moveTo(72,headY-11);x.lineTo(83,headY-2);x.lineTo(76,headY-1);x.closePath();x.fill();x.fillStyle='rgba(255,255,255,.7)';for(let k=0;k<5;k++){x.beginPath();x.arc(33+k*9,headY-12,1.3,0,7);x.fill()}}
+ if(ac==='headlamp'){x.fillStyle='#263238';R(28,headY-15,44,5,2);x.fill();x.fillStyle='#ffd34e';x.strokeStyle='#263238';x.lineWidth=2;x.beginPath();x.arc(50,headY-13,5,0,7);x.fill();x.stroke();const lg=x.createRadialGradient(50,headY-13,1,50,headY-13,16);lg.addColorStop(0,'rgba(255,245,180,.7)');lg.addColorStop(1,'rgba(255,245,180,0)');x.fillStyle=lg;x.beginPath();x.arc(50,headY-13,16,0,7);x.fill()}
+ /* قطع تُحمل باليد (رموز) */
+ const hi=ITEMS.hand.find(i=>i.id===A.hand);if(hi&&hi.emo){x.save();x.translate(86,96);x.rotate(.2);x.font='24px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillStyle='#000';x.globalAlpha=1;x.fillText(hi.e,0,0);x.restore()}
+}
+
 function itemOwned(kind,it,p){p=p||prof();if(it.fr)return true;if(it.lv!=null)return levelOf(p.xp).k>=it.lv;return p.items.includes(kind+':'+it.id)}
 function treasurePool(p){const out=[];Object.keys(ITEMS).forEach(k=>ITEMS[k].forEach(it=>{if(it.tr&&!p.items.includes(k+':'+it.id))out.push([k,it])}));return out}
 const ocColor=id=>(ITEMS.oc.find(x=>x.id===id)||ITEMS.oc[0]).c;
@@ -1112,6 +1130,7 @@ function drawAvatar(x,A,W,opt){
  if(A.acc==='goggles'){x.fillStyle='#5d4037';x.fillRect(27,headY-14,46,5);x.fillStyle='#8fd0ff';x.strokeStyle='#5d4037';x.lineWidth=3;x.beginPath();x.arc(40,headY-12,6,0,7);x.moveTo(66,headY-12);x.arc(60,headY-12,6,0,7);x.fill();x.stroke()}
  if(A.acc==='gradcap'&&!ghutra){x.fillStyle='#1d1d24';x.beginPath();x.moveTo(24,headY-22);x.lineTo(50,headY-32);x.lineTo(76,headY-22);x.lineTo(50,headY-12);x.closePath();x.fill();x.fillRect(38,headY-20,24,8);x.strokeStyle='#f2c230';x.lineWidth=2;x.beginPath();x.moveTo(50,headY-22);x.lineTo(70,headY-18);x.lineTo(70,headY-4);x.stroke();x.fillStyle='#f2c230';x.fillRect(68,headY-6,4,6)}
  if(A.acc==='helmet'&&!ghutra){const g=x.createLinearGradient(0,headY-30,0,headY+24);g.addColorStop(0,'#eef2f5');g.addColorStop(1,'#8a96a3');x.fillStyle=g;x.beginPath();x.arc(50,headY,headR+4,Math.PI,0);x.lineTo(74,headY+20);x.lineTo(26,headY+20);x.closePath();x.fill();x.fillStyle='#1d2b3a';rr(x,32,headY-2,36,6,3);x.fill();x.fillStyle='#e53935';x.beginPath();x.moveTo(50,headY-26);x.quadraticCurveTo(64,headY-44,72,headY-30);x.quadraticCurveTo(60,headY-34,50,headY-22);x.fill()}
+ themeAvatar(x,A,headY,headR,oc,top,bot,bw);
  /* ما يحمله في يده */
  const hd=A.hand||'none';
  if(hd==='book'){x.fillStyle='#1e88e5';rr(x,76,88,18,24,3);x.fill();x.fillStyle='#fff';x.fillRect(79,92,12,3);x.fillRect(79,98,9,2)}
@@ -1589,7 +1608,7 @@ function drawAvatarBack(x,A,W,o){o=o||{};x.save();x.scale(W/100,W/100);
  const sk=SKINS[A.skin]||SKINS[1],hc=hcColor(A.hc),oc0=ocColor(A.oc),oc=oc0==='rainbow'?'#e53935':oc0;
  const air=!!o.air,ph=o.ph||0,sw=air?0:Math.sin(ph);
  const robe=A.outfit==='thobe'||A.outfit==='bisht';
- const top={thobe:'#f4f4f0',bisht:'#f4f4f0',armor:'#b9c3cd',astro:'#eef2f6',pilot:'#1a2a4f',fire:'#c9a227',explorer:'#c2a46b',ninja:'#1d1d24',chef:'#fafafa',doctor:'#fafafa'}[A.outfit]||oc;
+ const top={ranger:'#5b7f3a',archaeo:'#d9bd8c',speed:'#1d1d24',thobe:'#f4f4f0',bisht:'#f4f4f0',armor:'#b9c3cd',astro:'#eef2f6',pilot:'#1a2a4f',fire:'#c9a227',explorer:'#c2a46b',ninja:'#1d1d24',chef:'#fafafa',doctor:'#fafafa'}[A.outfit]||oc;
  const pants=robe?'#f4f4f0':A.outfit==='astro'?'#dfe5ec':A.outfit==='ninja'?'#1d1d24':A.outfit==='fire'?'#b08d1f':'#24364a';
  const R=(X,Y,w,h,r)=>{x.beginPath();if(x.roundRect)x.roundRect(X,Y,w,h,r);else x.rect(X,Y,w,h)};
  /* ظلّ داخلي ناعم */
@@ -1614,8 +1633,14 @@ function drawAvatarBack(x,A,W,o){o=o||{};x.save();x.scale(W/100,W/100);
  if(A.outfit==='hoodie'){x.fillStyle='rgba(0,0,0,.2)';x.beginPath();x.ellipse(50,bt+6,15,9,0,0,Math.PI);x.fill()}
  if(A.outfit==='astro'){x.fillStyle='#cfd8dc';R(33,bt+6,34,30,8);x.fill();x.fillStyle=oc;x.fillRect(38,bt+12,24,5)}
  if(A.outfit==='explorer'){x.fillStyle='#8d6e3f';R(35,bt+8,30,28,7);x.fill();x.fillStyle='#5d4037';x.fillRect(35,bt+18,30,3)}
+ if(A.outfit==='runner'){x.fillStyle='rgba(255,255,255,.9)';x.fillRect(28,bt+2,44,3)}
+ if(A.outfit==='surf'){[[36,bt+10,'#fff'],[62,bt+16,'#ffd34e'],[46,bt+30,'#ff8fb1'],[64,bt+34,'#fff']].forEach(([a,b,c2])=>{x.fillStyle=c2;for(let k=0;k<5;k++){x.beginPath();x.arc(a+Math.cos(k*1.26)*3,b+Math.sin(k*1.26)*3,2.4,0,7);x.fill()}})}
+ if(A.outfit==='archaeo'){x.fillStyle='#7a5230';R(30,bt+2,40,34,8);x.fill();x.fillStyle='#5d3b1f';x.fillRect(30,bt+18,40,3)}
+ if(A.outfit==='parka'){x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=2;for(let k=1;k<4;k++){x.beginPath();x.moveTo(29,bt+k*11);x.quadraticCurveTo(50,bt+k*11+4,71,bt+k*11);x.stroke()}x.fillStyle='#f5f0e6';x.beginPath();x.ellipse(50,bt+2,20,6,0,0,7);x.fill()}
+ if(A.outfit==='speed'){x.fillStyle=oc;x.beginPath();x.moveTo(54,bt+6);x.lineTo(40,bt+24);x.lineTo(50,bt+24);x.lineTo(44,bt+40);x.lineTo(62,bt+18);x.lineTo(52,bt+18);x.closePath();x.fill()}
+ if(A.outfit==='ranger'){x.fillStyle='#3e2b1a';x.fillRect(28,bb-9,44,5)}
  /* حقيبة مدرسية */
- if(['uniform','jersey','hoodie'].includes(A.outfit)){const g=x.createLinearGradient(0,bt+8,0,bt+40);g.addColorStop(0,'#ffa25c');g.addColorStop(1,'#e8702a');x.fillStyle=g;R(34,bt+6,32,32,9);x.fill();
+ if(['uniform','runner','hoodie'].includes(A.outfit)){const g=x.createLinearGradient(0,bt+8,0,bt+40);g.addColorStop(0,'#ffa25c');g.addColorStop(1,'#e8702a');x.fillStyle=g;R(34,bt+6,32,32,9);x.fill();
   x.fillStyle='#c95d1c';R(38,bt+22,24,12,5);x.fill();x.strokeStyle='#fff3';x.lineWidth=1.5;x.beginPath();x.moveTo(40,bt+27);x.lineTo(60,bt+27);x.stroke();
   x.strokeStyle='#8a3d12';x.lineWidth=3;x.beginPath();x.moveTo(36,bt+6);x.lineTo(34,bt-1);x.moveTo(64,bt+6);x.lineTo(66,bt-1);x.stroke()}
  /* ما يحمله على ظهره */
@@ -1651,6 +1676,9 @@ function drawAvatarBack(x,A,W,o){o=o||{};x.save();x.scale(W/100,W/100);
  if(ac==='chefhat'&&!ghutra){x.fillStyle='#fff';x.fillRect(34,16,32,10);[[38,10],[50,4],[62,10]].forEach(([a,b])=>{x.beginPath();x.arc(a,b,10,0,7);x.fill()})}
  if(ac==='gradcap'&&!ghutra){x.fillStyle='#1d1d24';x.beginPath();x.moveTo(24,18);x.lineTo(50,8);x.lineTo(76,18);x.lineTo(50,28);x.closePath();x.fill();x.fillRect(38,20,24,8);x.fillStyle='#f2c230';x.fillRect(48,24,3,16)}
  if(ac==='goggles'){x.fillStyle='#5d4037';x.fillRect(27,27,46,5)}
+ if(ac==='safari'&&!ghutra){x.fillStyle='#a8865a';x.beginPath();x.ellipse(50,26,32,7,0,0,7);x.fill();x.fillStyle='#c9a46b';x.beginPath();x.arc(50,24,19,Math.PI,0);x.closePath();x.fill();x.fillStyle='#5d4037';x.fillRect(31,20,38,4)}
+ if(ac==='bandana'){x.fillStyle=oc==='#e53935'?'#1e88e5':'#e53935';x.beginPath();x.ellipse(50,26,23,5,0,0,7);x.fill();x.beginPath();x.moveTo(50,28);x.lineTo(42,44+Math.sin(ph)*3);x.lineTo(48,44);x.closePath();x.moveTo(50,28);x.lineTo(58,46+Math.sin(ph+1)*3);x.lineTo(54,46);x.closePath();x.fill()}
+ if(ac==='headlamp'){x.strokeStyle='#263238';x.lineWidth=4;x.beginPath();x.ellipse(50,28,23,5,0,0,7);x.stroke()}
  if(ac==='scarf'){x.fillStyle=oc==='#e53935'?'#1e88e5':'#e53935';R(34,56,32,9,4);x.fill();R(52,60,8,22+Math.sin(ph)*2,3);x.fill()}
  /* عباءة الأبطال والأجنحة: نراها كاملة من الخلف */
  if(ac==='cape'||A.outfit==='hero'){const fl=Math.sin(ph*1.3)*4;x.fillStyle='#d62839';x.beginPath();x.moveTo(30,62);x.lineTo(70,62);x.quadraticCurveTo(78+fl,90,82+fl,114);x.lineTo(18-fl,114);x.quadraticCurveTo(22-fl,90,30,62);x.fill();x.fillStyle='rgba(0,0,0,.15)';x.fillRect(49,64,2,48);x.fillStyle='#ffd34e';x.beginPath();for(let k=0;k<10;k++){const r=k%2?4:9,a=-Math.PI/2+k*Math.PI/5;x.lineTo(50+Math.cos(a)*r,84+Math.sin(a)*r)}x.closePath();x.fill()}
